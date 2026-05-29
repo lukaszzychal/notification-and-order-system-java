@@ -22,16 +22,18 @@ import com.app.shop.model.Order;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import com.app.shop.service.OrderService;
+
 @RestController
 @RequestMapping("/api/orders")
 public class OrderController {
 
+    private final OrderService orderService;
     private final OrderRepository orderRepository;
-    private final KafkaTemplate<String, String> kafkaTemplate;
 
-    public OrderController(OrderRepository orderRepository, KafkaTemplate<String, String> kafkaTemplate) {
+    public OrderController(OrderService orderService, OrderRepository orderRepository) {
+        this.orderService = orderService;
         this.orderRepository = orderRepository;
-        this.kafkaTemplate = kafkaTemplate;
     }
 
     @GetMapping
@@ -52,15 +54,14 @@ public class OrderController {
     }
 
     @PostMapping
-    public ResponseEntity<Order> createOrder(@RequestBody Order order) {
-        Order savedOrder = orderRepository.save(order);
+    public ResponseEntity<?> createOrder(@RequestBody Order order) {
+        try {
+            Order savedOrder = orderService.placeOrder(order);
 
-        String topic = "orders";
-        String message = "Nowe zamówienie o ID: " + savedOrder.getId();
-        kafkaTemplate.send(topic, message);
-        System.out.println("Wysłano wiadomość do tematu: " + topic + " Treść: " + message);
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(savedOrder);
+            return ResponseEntity.status(HttpStatus.CREATED).body(savedOrder);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
 
     }
 

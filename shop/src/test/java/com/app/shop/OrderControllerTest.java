@@ -1,4 +1,4 @@
-package com.example.shop;
+package com.app.shop;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.app.shop.controller.OrderController;
 import com.app.shop.model.Order;
 import com.app.shop.repository.OrderRepository;
+import com.app.shop.service.OrderService;
 
 @WebMvcTest(OrderController.class)
 public class OrderControllerTest {
@@ -31,6 +32,9 @@ public class OrderControllerTest {
     private ObjectMapper objectMapper;
 
     @MockitoBean
+    private OrderService orderService;
+
+    @MockitoBean
     private OrderRepository orderRepository;
 
     @MockitoBean
@@ -40,7 +44,7 @@ public class OrderControllerTest {
     public void shouldCreateOrderAndReturn201() throws Exception {
         Order order = createSampleOrder();
 
-        Mockito.when(orderRepository.save(any(Order.class))).thenReturn(order);
+        Mockito.when(orderService.placeOrder(any(Order.class))).thenReturn(order);
 
         mockMvc.perform(post("/api/orders")
                 .contentType("application/json")
