@@ -49,3 +49,57 @@ Prosta aplikacja backendowa realizująca proces składania zamówień, weryfikac
 
 1. Odpalenie bazy i Kafki: `docker compose up -d`
 2. Start aplikacji: `cd shop && ./gradlew bootRun`
+3. Start testów: `cd shop && ./gradlew test`
+
+---
+
+## 🔌 Przykładowe Flow & REST API (Instrukcja testowania)
+
+Aby prawidłowo przetestować działanie systemu i uniknąć błędu `500` (wynikającego z braku produktu), należy najpierw zasilić magazyn, a dopiero potem złożyć zamówienie.
+
+### KROK 1: Dodanie produktu do magazynu (Zasilenie stocku)
+
+**Endpoint:** `POST http://localhost:8080/api/orders/stock`
+
+**Nagłówki:** `Content-Type: application/json`
+
+**Przykładowy Payload (Request Body):**
+```json
+{
+  "productCode": "Klawiatura mechaniczna",
+  "availableQuantity": 10
+}
+```
+
+**Przykładowe żądanie cURL:**
+```bash
+curl -X POST http://localhost:8080/api/orders/stock \
+  -H "Content-Type: application/json" \
+  -d '{"productCode": "Klawiatura mechaniczna", "availableQuantity": 10}'
+```
+
+---
+
+### KROK 2: Złożenie zamówienia (Sprawdzenie magazynu i wysyłka Kafka)
+
+**Endpoint:** `POST http://localhost:8080/api/orders`
+
+**Nagłówki:** `Content-Type: application/json`
+
+**Przykładowy Payload (Request Body):**
+```json
+{
+  "productName": "Klawiatura mechaniczna",
+  "quantity": 1,
+  "price": 350.00
+}
+```
+
+**Przykładowe żądanie cURL:**
+```bash
+curl -X POST http://localhost:8080/api/orders \
+  -H "Content-Type: application/json" \
+  -d '{"productName": "Klawiatura mechaniczna", "quantity": 1, "price": 350.00}'
+```
+
+*Uwaga: Próba zamówienia ilości większej niż dostępna w kroku 1 (np. `quantity: 15`) zwróci poprawny status `400 Bad Request` z informacją o braku towaru.*
