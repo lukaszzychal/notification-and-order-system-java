@@ -5,6 +5,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -54,7 +55,6 @@ public class OrderControllerTest {
 
     private Order createSampleOrder() {
         return Order.builder()
-                .id(1L)
                 .productName("Test product")
                 .quantity(1)
                 .price(new BigDecimal("10.00"))

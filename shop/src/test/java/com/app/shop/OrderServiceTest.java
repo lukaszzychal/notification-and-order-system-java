@@ -1,5 +1,7 @@
 package com.app.shop;
 
+import java.math.BigDecimal;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -36,13 +38,9 @@ public class OrderServiceTest {
 
     @Test
     public void shouldThrowExceptionWhenNotEnoughStock() {
-        Order order = new Order();
-        order.setProductName("Laptop");
-        order.setQuantity(5);
+        Order order = createSampleOrder();
 
-        ProductStock stock = new ProductStock();
-        stock.setProductCode("Laptop");
-        stock.setAvailableQuantity(2);
+        ProductStock stock = createSampleProductStock();
 
         when(stockRepository.findByProductCode("Laptop")).thenReturn(Optional.of(stock));
 
@@ -52,5 +50,20 @@ public class OrderServiceTest {
 
         verify(orderRepository, never()).save(any(Order.class));
         verify(kafkaTemplate, never()).send(anyString(), anyString());
+    }
+
+    private Order createSampleOrder() {
+        return Order.builder()
+                .productName("Laptop")
+                .quantity(5)
+                .price(new BigDecimal("10.00"))
+                .build();
+    }
+
+    private ProductStock createSampleProductStock() {
+        return ProductStock.builder()
+                .productCode("Laptop")
+                .availableQuantity(2)
+                .build();
     }
 }
